@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Perform Tasks</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            color: white;
+            overflow-x: hidden;
+            touch-action: pan-y;
+            /* Allow vertical scrolling, prevent horizontal */
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .moon {
+            width: 80px;
+            height: 80px;
+            background-color: #f9f9f9;
+            border-radius: 50%;
+            margin: 10px auto;
+            box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.7);
+        }
+        
+        h1,
+        h2 {
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .task-box {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .task-box img {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .task-info {
+            flex-grow: 1;
+            margin-left: 10px;
+        }
+        
+        .task-info p {
+            margin: 5px 0;
+        }
+        
+        .check-btn {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        .check-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        #dots {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        @media (max-height: 600px) {
+            .moon {
+                width: 60px;
+                height: 60px;
+                margin: 5px auto;
+            }
+            h1,
+            h2 {
+                font-size: 1.2em;
+                margin: 5px 0;
+            }
+            .task-box {
+                padding: 5px;
+                margin-bottom: 5px;
+            }
+            .task-box img {
+                width: 30px;
+                height: 30px;
+            }
+            .check-btn {
+                padding: 5px 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="dots"></canvas>
+    <div class="container">
+        <div class="moon"></div>
+        <h1>Perform Tasks</h1>
+        <div class="task-box">
+            <img src="https://via.placeholder.com/50" alt="YouTube">
+            <div class="task-info">
+                <p>Watch Video</p>
+                <p>$ +10</p>
+            </div>
+            <button class="check-btn" onclick="checkTask(0)">Check</button>
+        </div>
+        <div class="task-box">
+            <img src="https://via.placeholder.com/50" alt="YouTube">
+            <div class="task-info">
+                <p>Watch Video</p>
+                <p>$ +10</p>
+            </div>
+            <button class="check-btn" onclick="checkTask(1)">Check</button>
+        </div>
+        <h2>Important Tasks</h2>
+        <div class="task-box">
+            <img src="https://via.placeholder.com/50" alt="Telegram">
+            <div class="task-info">
+                <p>Follow our channel</p>
+                <p>$ +20</p>
+            </div>
+            <button class="check-btn" onclick="checkTask(2)">Check</button>
+        </div>
+        <div class="task-box">
+            <img src="https://via.placeholder.com/50" alt="YouTube">
+            <div class="task-info">
+                <p>Subscribe to our YouTube</p>
+                <p>$ +50</p>
+            </div>
+            <button class="check-btn" onclick="checkTask(3)">Check</button>
+        </div>
+        <div class="task-box">
+            <img src="https://via.placeholder.com/50" alt="Twitter">
+            <div class="task-info">
+                <p>Follow our X</p>
+                <p>$ +20</p>
+            </div>
+            <button class="check-btn" onclick="checkTask(4)">Check</button>
+        </div>
+        <div class="task-box">
+            <img src="https://via.placeholder.com/50" alt="Instagram">
+            <div class="task-info">
+                <p>Follow our Instagram</p>
+                <p>$ +5</p>
+            </div>
+            <button class="check-btn" onclick="checkTask(5)">Check</button>
+        </div>
+    </div>
+    <script>
+        // Prevent zooming
+        document.addEventListener('touchmove', function(event) {
+            if (event.scale !== 1) {
+                event.preventDefault();
+            }
+        }, {
+            passive: false
+        });
+
+        // Animated dots background
+        const canvas = document.getElementById('dots');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const dots = [];
+        const numDots = 100;
+
+        for (let i = 0; i < numDots; i++) {
+            dots.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2 + 1,
+                dx: (Math.random() - 0.5) * 0.5,
+                dy: (Math.random() - 0.5) * 0.5
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            dots.forEach(dot => {
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.fill();
+
+                dot.x += dot.dx;
+                dot.y += dot.dy;
+
+                if (dot.x < 0 || dot.x > canvas.width) dot.dx = -dot.dx;
+                if (dot.y < 0 || dot.y > canvas.height) dot.dy = -dot.dy;
+            });
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Task checking functionality
+        function checkTask(taskIndex) {
+            const lastClickTime = localStorage.getItem(`lastClickTime${taskIndex}`);
+            const currentTime = new Date().getTime();
+
+            if (lastClickTime && currentTime - lastClickTime < 600000) { // 10 minutes = 600000 milliseconds
+                alert('You can only check this task once every 10 minutes. Please try again later.');
+                return;
+            }
+
+            localStorage.setItem(`lastClickTime${taskIndex}`, currentTime);
+            const button = document.getElementsByClassName('check-btn')[taskIndex];
+            button.disabled = true;
+            button.textContent = 'Checked';
+
+            // Add window.location.href functionality with a slight delay
+            setTimeout(() => {
+                switch (taskIndex) {
+                    case 0:
+                    case 1:
+                        window.location.href = "https://www.youtube.com";
+                        break;
+                    case 2:
+                        window.location.href = "https://t.me/yourchannel";
+                        break;
+                    case 3:
+                        window.location.href = "https://www.youtube.com/yourchannel";
+                        break;
+                    case 4:
+                        window.location.href = "https://twitter.com/youraccount";
+                        break;
+                    case 5:
+                        window.location.href = "https://www.instagram.com/youraccount";
+                        break;
+                }
+            }, 500); // 500ms delay before redirection
+
+            setTimeout(() => {
+                button.disabled = false;
+                button.textContent = 'Check';
+            }, 600000); // Re-enable after 10 minutes
+        }
+
+        // Initialize button states on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.getElementsByClassName('check-btn');
+            for (let i = 0; i < buttons.length; i++) {
+                const lastClickTime = localStorage.getItem(`lastClickTime${i}`);
+                const currentTime = new Date().getTime();
+
+                if (lastClickTime && currentTime - lastClickTime < 600000) {
+                    buttons[i].disabled = true;
+                    buttons[i].textContent = 'Checked';
+                    setTimeout(() => {
+                        buttons[i].disabled = false;
+                        buttons[i].textContent = 'Check';
+                    }, 600000 - (currentTime - lastClickTime));
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
